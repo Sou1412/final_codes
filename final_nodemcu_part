@@ -1,0 +1,85 @@
+#include <ESP8266WiFi.h>
+#include <FirebaseArduino.h>
+#include <SoftwareSerial.h>
+#include <ArduinoJson.h>
+
+
+
+// Set these to run example.
+#define FIREBASE_HOST "nodemcu-f6bfc-default-rtdb.firebaseio.com"
+#define FIREBASE_AUTH "VRvuFcVwHbTnUHRipsEqwpKPWsVHGyZnPQK3pnVh"
+#define WIFI_SSID "Youssef"
+#define WIFI_PASSWORD "ggggkkkk"
+
+int moisture_pin = A0;
+float soil_moisture;
+float air_temperature;
+float air_humidity;
+float soil_ph;
+float nitrogen_value, phosphorous_value, potassium_value;
+
+SoftwareSerial s(D6,D5);
+ 
+
+void setup() {
+  
+  Serial.begin(9600);
+
+  // connect to wifi.
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("connecting");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println();
+  Serial.print("connected: ");
+  Serial.println(WiFi.localIP());
+  
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+
+  // wait for serial communication ...
+  s.begin(9600);
+  while (!Serial) continue;
+  
+}
+
+void loop() {
+
+  if(s.available()>0){
+    
+  Serial.println("call 1");
+   StaticJsonBuffer<1000> jsonBuffer;
+  JsonObject& data = jsonBuffer.parseObject(s);
+  if (data == JsonObject::invalid())
+    return;
+ 
+  // debuggging ...
+  data.prettyPrintTo(Serial);
+  send_data("soil_moisture", data["soil_moisture"]);
+  //delay(1000);
+  send_data("air_temperature", data["air_temperature"]);
+  //delay(1000);
+  send_data("air_humidity", data["air_humidity"]);
+  //delay(1000);
+  send_data("soil_ph", data["soil_ph"]);
+  //delay(1000);
+  send_data("nitrogen_value", data["nitrogen_value"]);
+  //delay(1000);
+  send_data("phosphorous_value", data["phosphorous_value"]);
+  //delay(1000);
+  send_data("potassium_value", data["potassium_value"]);
+  //delay(10000);
+  }
+  
+}
+
+void send_data(String indicator, float sensor_data){
+    Firebase.pushFloat(indicator, sensor_data);  
+     if (Firebase.failed()) {
+      Serial.print("probleme avec l'ajout de");
+      Serial.println(indicator);
+      Serial.println(Firebase.error());  
+      return;
+  }
+  }
