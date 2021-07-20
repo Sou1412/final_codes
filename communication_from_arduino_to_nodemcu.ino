@@ -3,9 +3,9 @@
 #include <Wire.h>
 #include <dht.h>
 
-#define Dht11_pin 4
-#define RE 8
-#define DE 7
+#define Dht11_pin 4 //change to: const int Dht11_pin = 4;
+#define RE 8 //same
+#define DE 7 // same
 
 const byte ph[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x01, 0x84, 0x0A};
 const byte nitro[] = {0x01,0x03, 0x00, 0x1e, 0x00, 0x01, 0xe4, 0x0c};
